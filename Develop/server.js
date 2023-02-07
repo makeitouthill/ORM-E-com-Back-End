@@ -7,6 +7,17 @@ const Category = require('./models/Category');
 const Tag = require('./models/Tag');
 const app = express();
 const PORT = process.env.PORT || 3001;
+const fs = require('fs');
+const path = require('path');
+
+fs.readFile(path.join(__dirname, './db/schema.sql'), 'utf8', (err, data) => {
+  if (err) throw err;
+
+  sequelize.query(data, (error, results) => {
+    if (error) throw error;
+    console.log('Schema has been successfully executed.');
+  });
+});
 
 sequelize.sync({ force: false }).then(() => {
   console.log(`Tables have been created!`);
