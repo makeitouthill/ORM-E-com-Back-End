@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
+const { primaryKeyAttributes } = require('../../models/Product');
 
 // The `/api/products` endpoint
 
@@ -7,12 +8,51 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  Product.findAll({
+    include: [
+      {
+      model: Category,
+      attributes: ['category_name']
+      },
+      {
+      model: Tag,
+      attributes: ['tag_name']
+      }
+      ],
+  })
+  .then((products) => res.status(200).json(products))
+  .catch((err) => {
+    console.log(err);
+    res.status(400).json(err);
+  });
 });
 
 // get one product
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  Product.findOne({
+    where: { id: req.params.id },
+    include: [
+      {
+        model: Category,
+        attributes: ['category_name']
+      },
+      {
+        model: Tag
+      }
+    ]
+  })
+    .then(product => {
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
+      res.json(product);
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching product." });
+    });
 });
 
 // create new product
@@ -91,6 +131,26 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
+  Product.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+  .then(deletedProduct => {
+    if (deletedProduct) {
+      return res.send({message: "Product deleted successfully!"});
+    }
+  })
+  .catch(err => {
+    if (err.kind === 'ObjectId' || err.name === 'NotFound') {
+      return res.status(404).send({
+        message: "Product not found with id " + req.params.id
+      });
+    }
+    return res.status(500).send({
+      message: "Could not delete product with id " + req.params.id
+    });
+  });
 });
 
 module.exports = router;

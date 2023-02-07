@@ -7,7 +7,10 @@ router.get('/', (req, res) => {
   // find all categories
   // be sure to include its associated Products
   Category.findAll({
-    include: [Product]
+    include: [
+    {model: Category, attributes: ['category_name'] },
+    {model: Tag, attributes: ['tag_name'] },
+    ],
   })
     .then(dbCategoryData => res.json(dbCategoryData))
     .catch(err => {
