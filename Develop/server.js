@@ -1,9 +1,16 @@
 const express = require('express');
 const routes = require('./routes');
 // import sequelize connection
-
+const sequelize = require('./config/connection');
+const Product = require('./models/Product');
+const Category = require('./models/Category');
+const Tag = require('./models/Tag');
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+sequelize.sync({ force: false }).then(() => {
+  console.log(`Tables have been created!`);
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
